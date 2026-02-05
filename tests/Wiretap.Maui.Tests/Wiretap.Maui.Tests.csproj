@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <!-- SQLite for database tests -->
+    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.11" />
+    <!-- PDF export -->
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.2.4" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+  </ItemGroup>
+
+  <!-- Link source files directly for testing (no MAUI dependencies needed for core logic) -->
+  <ItemGroup>
+    <Compile Include="..\..\src\Wiretap.Maui\Core\HttpRecord.cs" Link="Core\HttpRecord.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Core\IWiretapStore.cs" Link="Core\IWiretapStore.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Core\WiretapStore.cs" Link="Core\WiretapStore.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\WiretapOptions.cs" Link="WiretapOptions.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Handler\WiretapHandler.cs" Link="Handler\WiretapHandler.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Services\CurlExporter.cs" Link="Services\CurlExporter.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Core\RecordFilter.cs" Link="Core\RecordFilter.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Services\SearchService.cs" Link="Services\SearchService.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Database\HttpRecordEntity.cs" Link="Database\HttpRecordEntity.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Database\WiretapDatabase.cs" Link="Database\WiretapDatabase.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Core\HybridWiretapStore.cs" Link="Core\HybridWiretapStore.cs" />
+    <Compile Include="..\..\src\Wiretap.Maui\Services\PdfExporter.cs" Link="Services\PdfExporter.cs" />
+  </ItemGroup>
+
+</Project>

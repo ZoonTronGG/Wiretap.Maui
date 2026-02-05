@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ui="clr-namespace:Wiretap.Maui.UI"
+             xmlns:converters="clr-namespace:Wiretap.Maui.UI.Converters"
+             xmlns:core="clr-namespace:Wiretap.Maui.Core"
+             x:Class="Wiretap.Maui.UI.WiretapPage"
+             x:DataType="ui:WiretapViewModel"
+             x:Name="ThisPage"
+             Title="HTTP Inspector"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:StatusCodeToColorConverter x:Key="StatusCodeToColor" />
+            <converters:MethodToColorConverter x:Key="MethodToColor" />
+            <converters:InverseBoolConverter x:Key="InverseBool" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Clear" Command="{Binding ClearCommand}" />
+        <ToolbarItem Text="Close" Clicked="OnCloseClicked" />
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*">
+
+        <!-- Search Bar -->
+        <Border Grid.Row="0"
+                Margin="10,10,10,0"
+                Padding="0"
+                BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#2D2D2D}"
+                StrokeThickness="1"
+                Stroke="{AppThemeBinding Light=#E0E0E0, Dark=#3D3D3D}">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="8" />
+            </Border.StrokeShape>
+            <Grid ColumnDefinitions="Auto,*,Auto" Padding="10,0">
+                <!-- Search icon -->
+                <Label Grid.Column="0"
+                       Text="🔍"
+                       FontSize="16"
+                       VerticalOptions="Center"
+                       Margin="0,0,8,0" />
+
+                <!-- Search entry -->
+                <Entry Grid.Column="1"
+                       Text="{Binding SearchText}"
+                       Placeholder="Search URL, body, headers..."
+                       PlaceholderColor="Gray"
+                       FontSize="14"
+                       VerticalOptions="Center"
+                       BackgroundColor="Transparent"
+                       ClearButtonVisibility="WhileEditing" />
+
+                <!-- Clear button (always visible when there's text) -->
+                <Button Grid.Column="2"
+                        Text="✕"
+                        FontSize="14"
+                        Command="{Binding ClearSearchCommand}"
+                        IsVisible="{Binding IsFilterActive}"
+                        BackgroundColor="Transparent"
+                        TextColor="Gray"
+                        Padding="8,0"
+                        VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <!-- Filter Chips Row (Methods + Status) -->
+        <ScrollView Grid.Row="1"
+                    Orientation="Horizontal"
+                    HorizontalScrollBarVisibility="Never"
+                    Margin="10,8,10,0">
+            <HorizontalStackLayout Spacing="8">
+                <!-- Method Filter Chips -->
+                <HorizontalStackLayout Spacing="8"
+                                       BindableLayout.ItemsSource="{Binding MethodChips}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="ui:FilterChip">
+                            <Button Text="{Binding Text}"
+                                    Command="{Binding ToggleCommand}"
+                                    CommandParameter="{Binding .}"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    TextColor="{Binding CurrentTextColor}"
+                                    BackgroundColor="{Binding CurrentBackgroundColor}"
+                                    BorderColor="{Binding CurrentBorderColor}"
+                                    BorderWidth="1.5"
+                                    CornerRadius="16"
+                                    Padding="12,6"
+                                    MinimumHeightRequest="0"
+                                    MinimumWidthRequest="0" />
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+
+                <!-- Separator -->
+                <BoxView WidthRequest="1"
+                         HeightRequest="24"
+                         Color="{AppThemeBinding Light=#E0E0E0, Dark=#3D3D3D}"
+                         VerticalOptions="Center" />
+
+                <!-- Status Filter Chips -->
+                <HorizontalStackLayout Spacing="8"
+                                       BindableLayout.ItemsSource="{Binding StatusChips}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="ui:FilterChip">
+                            <Button Text="{Binding Text}"
+                                    Command="{Binding ToggleCommand}"
+                                    CommandParameter="{Binding .}"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    TextColor="{Binding CurrentTextColor}"
+                                    BackgroundColor="{Binding CurrentBackgroundColor}"
+                                    BorderColor="{Binding CurrentBorderColor}"
+                                    BorderWidth="1.5"
+                                    CornerRadius="16"
+                                    Padding="12,6"
+                                    MinimumHeightRequest="0"
+                                    MinimumWidthRequest="0" />
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </HorizontalStackLayout>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Header with stats -->
+        <Border Grid.Row="2"
+                Padding="15,10"
+                BackgroundColor="{AppThemeBinding Light=#F5F5F5, Dark=#1E1E1E}">
+            <HorizontalStackLayout Spacing="20">
+                <Label Text="{Binding CountDisplay}"
+                       FontSize="14"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <!-- Empty state (no records at all) -->
+        <VerticalStackLayout Grid.Row="3"
+                             IsVisible="{Binding IsEmpty}"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="10">
+            <Label Text="📡"
+                   FontSize="48"
+                   HorizontalOptions="Center" />
+            <Label Text="No requests captured yet"
+                   FontSize="18"
+                   TextColor="Gray"
+                   HorizontalOptions="Center" />
+            <Label Text="Make HTTP calls in your app to see them here"
+                   FontSize="14"
+                   TextColor="Gray"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <!-- No search results state -->
+        <VerticalStackLayout Grid.Row="3"
+                             IsVisible="{Binding HasNoSearchResults}"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="10">
+            <Label Text="🔍"
+                   FontSize="48"
+                   HorizontalOptions="Center" />
+            <Label Text="No matching requests"
+                   FontSize="18"
+                   TextColor="Gray"
+                   HorizontalOptions="Center" />
+            <Label Text="Try a different search term"
+                   FontSize="14"
+                   TextColor="Gray"
+                   HorizontalOptions="Center" />
+        </VerticalStackLayout>
+
+        <!-- Request list -->
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding Records}"
+                        SelectionMode="Single"
+                        SelectedItem="{Binding SelectedRecord}"
+                        IsVisible="{Binding ShowRecordsList}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="core:HttpRecord">
+                    <Border Margin="10,5"
+                            Padding="12"
+                            StrokeThickness="0"
+                            BackgroundColor="{AppThemeBinding Light=#FFFFFF, Dark=#2D2D2D}">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="8" />
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Opacity="0.1" Radius="4" Offset="0,2" />
+                        </Border.Shadow>
+
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+
+                            <!-- Method badge -->
+                            <Border Grid.Row="0" Grid.Column="0"
+                                    Padding="8,4"
+                                    BackgroundColor="{Binding Method, Converter={StaticResource MethodToColor}}"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="4" />
+                                </Border.StrokeShape>
+                                <Label Text="{Binding Method}"
+                                       FontSize="11"
+                                       FontAttributes="Bold"
+                                       TextColor="White" />
+                            </Border>
+
+                            <!-- URL -->
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding DisplayUrl}"
+                                   FontSize="14"
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center" />
+
+                            <!-- Status code -->
+                            <HorizontalStackLayout Grid.Row="0" Grid.Column="2"
+                                                   Spacing="6"
+                                                   VerticalOptions="Center">
+                                <!-- Error indicator -->
+                                <Label Text="⚠️"
+                                       FontSize="14"
+                                       IsVisible="{Binding IsFailed}" />
+
+                                <!-- Status code badge -->
+                                <Border Padding="6,2"
+                                        IsVisible="{Binding IsComplete}"
+                                        BackgroundColor="{Binding StatusCode, Converter={StaticResource StatusCodeToColor}}">
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="4" />
+                                    </Border.StrokeShape>
+                                    <Label Text="{Binding StatusCode}"
+                                           FontSize="12"
+                                           FontAttributes="Bold"
+                                           TextColor="White" />
+                                </Border>
+                            </HorizontalStackLayout>
+
+                            <!-- Bottom row: timestamp and duration -->
+                            <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                                   Spacing="15">
+                                <Label Text="{Binding LocalTimestamp, StringFormat='{0:HH:mm:ss}'}"
+                                       FontSize="12"
+                                       TextColor="Gray" />
+                                <Label Text="{Binding DurationDisplay}"
+                                       FontSize="12"
+                                       TextColor="Gray" />
+                                <Label Text="{Binding TotalSize, StringFormat='{0:N0} bytes'}"
+                                       FontSize="12"
+                                       TextColor="Gray" />
+                                <!-- Error message if failed -->
+                                <Label Text="{Binding ErrorMessage}"
+                                       FontSize="12"
+                                       TextColor="#F44336"
+                                       IsVisible="{Binding IsFailed}"
+                                       LineBreakMode="TailTruncation"
+                                       MaxLines="1" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>

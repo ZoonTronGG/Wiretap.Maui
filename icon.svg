@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="456" height="456" rx="80" fill="#512BD4"/>
+  <!-- Wiretap icon: stylized network/signal waves -->
+  <g fill="white">
+    <!-- Center dot -->
+    <circle cx="228" cy="228" r="30"/>
+    <!-- Inner wave -->
+    <path d="M228 128 A100 100 0 0 1 328 228" fill="none" stroke="white" stroke-width="20" stroke-linecap="round"/>
+    <path d="M228 328 A100 100 0 0 1 128 228" fill="none" stroke="white" stroke-width="20" stroke-linecap="round"/>
+    <!-- Outer wave -->
+    <path d="M228 78 A150 150 0 0 1 378 228" fill="none" stroke="white" stroke-width="20" stroke-linecap="round"/>
+    <path d="M228 378 A150 150 0 0 1 78 228" fill="none" stroke="white" stroke-width="20" stroke-linecap="round"/>
+  </g>
+</svg>
