@@ -150,14 +150,28 @@ public partial class WiretapDetailPage : ContentPage
         if (string.IsNullOrEmpty(body))
             return "(no body)";
 
-        var result = body;
+        // Detect binary content (high ratio of non-printable chars)
+        if (IsBinaryContent(body))
+            return $"(binary content, {body.Length:N0} bytes)";
+
+        // Cap display size to prevent UI freeze
+        const int maxDisplayChars = 32_768;
+        var displayBody = body;
+        var displayTruncated = truncated;
+        if (body.Length > maxDisplayChars)
+        {
+            displayBody = body[..maxDisplayChars];
+            displayTruncated = true;
+        }
+
+        var result = displayBody;
 
         // Try to pretty-print JSON
         if (_options.PrettyPrintJson)
         {
             try
             {
-                var json = JsonSerializer.Deserialize<JsonElement>(body);
+                var json = JsonSerializer.Deserialize<JsonElement>(displayBody);
                 result = JsonSerializer.Serialize(json, PrettyPrintOptions);
             }
             catch
@@ -166,12 +180,20 @@ public partial class WiretapDetailPage : ContentPage
             }
         }
 
-        if (truncated)
+        if (displayTruncated)
         {
             result += "\n\n... (truncated)";
         }
 
         return result;
+    }
+
+    private static bool IsBinaryContent(string text)
+    {
+        const int sampleSize = 512;
+        var sample = text.Length > sampleSize ? text[..sampleSize] : text;
+        var nonPrintable = sample.Count(c => char.IsControl(c) && c != '\n' && c != '\r' && c != '\t');
+        return nonPrintable > sample.Length * 0.1;
     }
 
     private static Color GetMethodColor(string method)

@@ -372,6 +372,56 @@ public class WiretapHandlerTests
         Assert.Contains(records, r => r.Url.EndsWith("/third") && r.Method == "POST");
     }
 
+    [Fact]
+    public async Task Handler_PreservesMultipartContentWithBoundary()
+    {
+        // Arrange
+        var store = CreateStore();
+        var options = CreateOptions();
+        string? downstreamContentType = null;
+        string? downstreamBody = null;
+
+        var innerHandler = new MockInnerHandler(async request =>
+        {
+            downstreamContentType = request.Content?.Headers.ContentType?.ToString();
+            if (request.Content != null)
+                downstreamBody = await request.Content.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var handler = new WiretapHandler(store, options)
+        {
+            InnerHandler = innerHandler
+        };
+
+        var client = new HttpClient(handler);
+
+        var multipart = new MultipartFormDataContent();
+        var fileBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47 }; // PNG magic bytes
+        var fileContent = new ByteArrayContent(fileBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        multipart.Add(fileContent, "photo", "test.png");
+        multipart.Add(new StringContent("caption text"), "caption");
+
+        // Act
+        await client.PostAsync("https://api.example.com/upload", multipart);
+
+        // Assert — downstream handler received correct Content-Type with boundary
+        Assert.NotNull(downstreamContentType);
+        Assert.Contains("multipart/form-data", downstreamContentType);
+        Assert.Contains("boundary=", downstreamContentType);
+
+        // Assert — downstream handler could read the body with file content intact
+        Assert.NotNull(downstreamBody);
+        Assert.Contains("test.png", downstreamBody);
+        Assert.Contains("caption text", downstreamBody);
+
+        // Assert — Wiretap captured something for display
+        var record = store.GetRecords()[0];
+        Assert.Equal("POST", record.Method);
+        Assert.True(record.RequestSize > 0);
+    }
+
     [Theory]
     [InlineData(HttpStatusCode.OK)]
     [InlineData(HttpStatusCode.Created)]

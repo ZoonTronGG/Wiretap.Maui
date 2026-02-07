@@ -27,7 +27,8 @@
                 <Setter Property="FontFamily" Value="Courier New" />
                 <Setter Property="FontSize" Value="12" />
                 <Setter Property="IsReadOnly" Value="True" />
-                <Setter Property="AutoSize" Value="TextChanges" />
+                <Setter Property="AutoSize" Value="Disabled" />
+                <Setter Property="HeightRequest" Value="300" />
                 <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F8F8F8, Dark=#1E1E1E}" />
                 <Setter Property="TextColor" Value="{AppThemeBinding Light=#333333, Dark=#D4D4D4}" />
             </Style>
