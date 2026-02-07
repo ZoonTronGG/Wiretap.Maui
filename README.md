@@ -215,7 +215,7 @@ Your App → WiretapHandler → AuthHandler → Network
 ```
 
 **Key points:**
-- Request/response bodies are **cloned** (not consumed), so your API calls work normally
+- Request/response bodies are **read without replacement**, so your API calls work normally
 - Records are stored in memory with a configurable limit (oldest removed when full)
 - The floating button provides quick access to the inspector UI
 - Sensitive headers are masked by default to protect credentials
