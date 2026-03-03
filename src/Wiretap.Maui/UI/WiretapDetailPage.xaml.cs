@@ -10,8 +10,7 @@ namespace Wiretap.Maui.UI;
 /// <summary>
 /// Page displaying detailed information about a single HTTP request/response.
 /// </summary>
-[QueryProperty(nameof(RecordId), "RecordId")]
-public partial class WiretapDetailPage : ContentPage
+public partial class WiretapDetailPage : ContentPage, IQueryAttributable
 {
     private readonly IWiretapStore _store;
     private readonly WiretapOptions _options;
@@ -24,8 +23,6 @@ public partial class WiretapDetailPage : ContentPage
     private string _responseHeadersRaw = string.Empty;
     private string _responseBodyRaw = string.Empty;
 
-    public Guid RecordId { get; set; }
-
     public WiretapDetailPage(IWiretapStore store, WiretapOptions? options = null)
     {
         InitializeComponent();
@@ -33,14 +30,21 @@ public partial class WiretapDetailPage : ContentPage
         _options = options ?? new WiretapOptions();
     }
 
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
-        base.OnNavigatedTo(args);
+        if (!query.TryGetValue("RecordId", out var value))
+            return;
 
-        if (RecordId != Guid.Empty)
-        {
-            LoadRecord(RecordId);
-        }
+        Guid recordId;
+        if (value is Guid guid)
+            recordId = guid;
+        else if (Guid.TryParse(value?.ToString(), out var parsed))
+            recordId = parsed;
+        else
+            return;
+
+        if (recordId != Guid.Empty)
+            LoadRecord(recordId);
     }
 
     /// <summary>
